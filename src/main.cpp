@@ -14,5 +14,5 @@ using namespace vex;
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
-
+  idrive.driveTo({10.0, 2.0}, 100.0);
 }

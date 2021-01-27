@@ -24,13 +24,8 @@ public:
   vex::inertial inertialSensor;
   vex::motor_group leftDrive, rightDrive;
 
-  inteldrive(vex::inertial i, double ratio,
-             vex::motor_group l, vex::motor_group r, 
-             vex::encoder le, vex::encoder re)
-            : inertialSensor{i}, inchesRatio{ratio}, absoluteLocation{vec2{0.0}}, 
-              leftDrive{l}, rightDrive{r}, 
-              leftEncoder{le}, rightEncoder{re},
-              handler(callRun, this) {}
+  inteldrive(vex::inertial i, double ratio, vex::motor_group l, vex::motor_group r, 
+             vex::encoder le, vex::encoder re);
 
   ~inteldrive() {handler.interrupt();}
   
@@ -48,7 +43,8 @@ public:
   void arcade(double vertical, double horizontal, double vertModifier = 1.0, double horiModifer = 1.0);
   void tank(double l, double r, double modifer = 1.0);
 
-  //All implemented G-Code instructions, robot is considered the spindel
+  //TO BE IMPLEMENTED
+  //All G-Code instructions, robot is considered the spindel
   enum ginstruct {
     G00, G01, G02, G03, G04, G90, G91,
     M19

@@ -15,6 +15,16 @@
 using namespace std;
 using namespace vex;
 
+inteldrive::inteldrive(vex::inertial i, double ratio, vex::motor_group l, vex::motor_group r, 
+                       vex::encoder le, vex::encoder re)
+                      : inertialSensor(i), leftEncoder{le}, rightEncoder{re} {
+  inchesRatio = ratio;
+  absoluteLocation = vec2{ 0.0 };
+  leftDrive = l;
+  rightDrive = r;
+  handler = vex::thread(callRun, this);
+}
+
 void inteldrive::callRun(void* ptr) {
   ((inteldrive *)ptr)->run();
 }
@@ -30,12 +40,12 @@ void inteldrive::run() {
       double theta = getYaw(); //Should be more accurate
       //double theta = left - right / WIDTH_BETWEEN_WHEELS;
 
-      //Gets most likely (average radius)
+      //Gets most likely (average) radius
       double radius = (right/theta) + (WIDTH_BETWEEN_WHEELS/2);
       double dist = 2 * sin(theta/2) * (radius/theta + WIDTH_BETWEEN_WHEELS/2);
       //STEP 6 NOT IMPLEMENTED YET 
 
-      absoluteLocation += vec2{dist * cos(absoluteRotation), dist * sin(absoluteRotation)};
+      absoluteLocation += vec2{ dist * cos(absoluteRotation), dist * sin(absoluteRotation) };
       absoluteRotation += theta;
 
       leftEncoder.resetRotation();
