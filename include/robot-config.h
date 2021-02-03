@@ -2,22 +2,17 @@
 
 #include "inteldrive.h"
 
-using namespace vex;
+extern vex::brain brain;
+extern vex::controller primary;
 
-extern brain Brain;
-extern inertial inert;
-extern motor backLeft;
-extern motor backRight;
-extern motor forwardLeft;
-extern motor forwardRight;
-extern motor_group leftGroup;
-extern motor_group rightGroup;
+extern vex::inertial inert;
+extern vex::motor backLeft;
+extern vex::motor backRight;
+extern vex::motor forwardLeft;
+extern vex::motor forwardRight;
+extern vex::motor_group leftGroup;
+extern vex::motor_group rightGroup;
 
 extern inteldrive idrive;
 
-/**
- * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
- *
- * This should be called at the start of your int main function.
- */
 void vexcodeInit(void);

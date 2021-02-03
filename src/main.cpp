@@ -9,10 +9,21 @@
 
 #include "vex.h"
 
-using namespace vex;
+vex::competition comp;
+
+void auton() {
+
+}
+
+void manual() {
+  idrive.arcade(primary.Axis3.value(), primary.Axis4.value());
+}
 
 int main() {
-  // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
-  idrive.driveTo({10.0, 2.0}, 100.0);
+
+  comp.autonomous(auton);
+  comp.drivercontrol(manual);
+
+  return 0;
 }

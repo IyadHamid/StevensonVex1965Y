@@ -24,7 +24,7 @@ constexpr bool within_angle_range(double a, double x, double y) {
 }
 // Difference of A and B in degrees
 // Positive : A is right of B
-const double angle_difference(double a, double b) {
+static const double angle_difference(double a, double b) {
   return std::fmod((a - b + 180.0), 360.0) - 180.0;
 }                             
 

@@ -12,9 +12,6 @@
 #include "common.h"
 #include "PID.h"
 
-using namespace std;
-using namespace vex;
-
 inteldrive::inteldrive(vex::inertial i, double ratio, vex::motor_group l, vex::motor_group r, 
                        vex::encoder le, vex::encoder re)
                       : inertialSensor(i), leftEncoder{le}, rightEncoder{re} {
@@ -31,8 +28,8 @@ void inteldrive::callRun(void* ptr) {
 
 void inteldrive::run() {
   for (;;) {
-    double left = deg2rad(leftEncoder.rotation(rotationUnits::deg));
-    double right = deg2rad(rightEncoder.rotation(rotationUnits::deg));
+    double left = deg2rad(leftEncoder.rotation(vex::rotationUnits::deg));
+    double right = deg2rad(rightEncoder.rotation(vex::rotationUnits::deg));
 
     //Implemented based on this paper
     //http://thepilons.ca/wp-content/uploads/2018/10/Tracking.pdf
@@ -41,44 +38,52 @@ void inteldrive::run() {
       //double theta = left - right / WIDTH_BETWEEN_WHEELS;
 
       //Gets most likely (average) radius
-      double radius = (right/theta) + (WIDTH_BETWEEN_WHEELS/2);
-      double dist = 2 * sin(theta/2) * (radius/theta + WIDTH_BETWEEN_WHEELS/2);
+      double radius = (right/theta) + (robotWidth/2);
+      double dist = 2 * sin(theta/2) * (radius/theta + robotWidth/2); 
+      //vec2 offset = {
+      //};
+      
       //STEP 6 NOT IMPLEMENTED YET 
 
       absoluteLocation += vec2{ dist * cos(absoluteRotation), dist * sin(absoluteRotation) };
+      //absoluteLocation += offset;
       absoluteRotation += theta;
 
       leftEncoder.resetRotation();
       rightEncoder.resetRotation();
     }
-    this_thread::sleep_for(100);
+    vex::this_thread::sleep_for(100);
   }
 }
 
-void inteldrive::drive(directionType dir, double vel, velocityUnits units, double ratio) {
+void inteldrive::drive(vex::directionType dir, double vel, vex::velocityUnits units, double ratio) {
   ratio = sqrt(ratio);
-  leftDrive.spin(dir, vel/ratio, units);
-  rightDrive.spin(dir, vel*ratio, units);
+  leftDrive .spin(dir, vel / ratio, units);
+  rightDrive.spin(dir, vel * ratio, units);
 }
 
-void inteldrive::drive(directionType dir, double pct, percentUnits units) {
-  leftDrive.spin(dir, pct, units);
+void inteldrive::drive(vex::directionType dir, double pct, vex::percentUnits units) {
+  leftDrive .spin(dir, pct, units);
   rightDrive.spin(dir, pct, units);
 }
 
-void inteldrive::stop(brakeType mode) {
-  leftDrive.stop(mode);
+void inteldrive::stop(vex::brakeType mode) {
+  leftDrive .stop(mode);
   rightDrive.stop(mode);
 }
 
 
 void inteldrive::turnTo(double a, double vel) {
-  function<double(double)> error = [this](double goal){return angle_difference(goal, getYaw());};
-  function<void(double)> output = [this](double input){
-    leftDrive.spin(directionType::fwd, input, velocityUnits::rpm);
-    rightDrive.spin(directionType::rev, input, velocityUnits::rpm);
+  std::function<double(double)> error = [this](double goal) {
+    return angle_difference(goal, getYaw());
   };
-  function<double(double)> func = [vel](double input){return input * vel;};
+  std::function<void(double)> output = [this](double input) {
+    leftDrive .spin(vex::directionType::fwd, input, vex::velocityUnits::rpm);
+    rightDrive.spin(vex::directionType::rev, input, vex::velocityUnits::rpm);
+  };
+  std::function<double(double)> func = [vel](double input) {
+    return input * vel;
+  };
 
   PID pid(1.0, 1.0, 1.0, error, output, func);
   pid.run(a);
@@ -87,9 +92,15 @@ void inteldrive::turnTo(double a, double vel) {
 void inteldrive::driveTo(vec2 loc, double vel) {
   vec2 disp = loc - absoluteLocation;
   turnTo(disp.ang(), vel);
-  function<double(double)> error = [this, loc](double goal)->double{return (const_cast<vec2&>(loc) - absoluteLocation).mag();};
-  function<void(double)> output = [this](double input){drive(directionType::fwd, input, velocityUnits::rpm);};
-  function<double(double)> func = [vel](double input){return input * vel;};
+  std::function<double(double)> error = [this, loc](double goal)->double {
+    return (const_cast<vec2&>(loc) - absoluteLocation).mag();
+  };
+  std::function<void(double)> output = [this](double input) {
+    drive(vex::directionType::fwd, input, vex::velocityUnits::rpm);
+  };
+  std::function<double(double)> func = [vel](double input) {
+    return input * vel;
+  };
 
   PID pid(1.0, 1.0, 1.0, error, output, func);
   pid.run(error(0.0));
@@ -101,17 +112,23 @@ void inteldrive::arcTo(vec2 loc, double ang, bool cw, double vel) {
   //r^2=-d^2/(2*cos(ang)-2)
   double radius = sqrt((-dist*dist)/(2*cos(ang)-2));
   radius *= cw ? 1.0 : -1.0;
-  double r = (radius-(WIDTH_BETWEEN_WHEELS/2))*ang;
-  double l = (radius+(WIDTH_BETWEEN_WHEELS/2))*ang;
+  double r = (radius-(robotWidth/2.0))*ang;
+  double l = (radius+(robotWidth/2.0))*ang;
   double ratio = cw ? r/l : l/r;
 
   double iang = (180.0-ang)/2.0 + (loc - absoluteLocation).ang();
   //vec2 center = absoluteLocation + vec2{cos(iang) * radius, sin(iang) * radius};
   turnTo(-1/iang, vel);
 
-  function<double(double)> error = [this, loc](double goal)->double{return (const_cast<vec2&>(loc) - absoluteLocation).mag();};
-  function<void(double)> output = [this, ratio](double input){drive(directionType::fwd, input, velocityUnits::rpm, ratio);};
-  function<double(double)> func = [vel](double input){return input * vel;};
+  std::function<double(double)> error = [this, loc](double goal)->double {
+    return (const_cast<vec2&>(loc) - absoluteLocation).mag();
+  };
+  std::function<void(double)> output = [this, ratio](double input) { 
+    drive(vex::directionType::fwd, input, vex::velocityUnits::rpm, ratio);
+  };
+  std::function<double(double)> func = [vel](double input) {
+    return input * vel;
+  };
 
   PID pid(1.0, 1.0, 1.0, error, output, func);
   pid.run(error(0.0));
@@ -121,23 +138,23 @@ void inteldrive::arcTo(vec2 loc, double ang, bool cw, double vel) {
 
 
 
-double inteldrive::getEncoderRotation(rotationUnits units) {
+double inteldrive::getEncoderRotation(vex::rotationUnits units) {
   return (leftDrive.rotation(units) + rightDrive.rotation(units)) / 2;
 }
 
-double inteldrive::getYaw(rotationUnits units) {
-  return inertialSensor.orientation(orientationType::yaw, units);
+double inteldrive::getYaw(vex::rotationUnits units) {
+  return inertialSensor.orientation(vex::orientationType::yaw, units);
 }
 void inteldrive::arcade(double vertical, double horizontal, double vertModifer, double horiModifer) {
   vertical *= vertModifer;
   horizontal *= horiModifer;
-  leftDrive.spin(directionType::fwd, vertical + horizontal, percentUnits::pct);
-  rightDrive.spin(directionType::fwd, vertical - horizontal, percentUnits::pct); 
+  leftDrive .spin(vex::directionType::fwd, vertical + horizontal, vex::percentUnits::pct);
+  rightDrive.spin(vex::directionType::fwd, vertical - horizontal, vex::percentUnits::pct); 
 }
 
 void inteldrive::tank(double l, double r, double modifer) {
-  leftDrive.spin(directionType::fwd, l * modifer, percentUnits::pct);
-  rightDrive.spin(directionType::fwd, r * modifer, percentUnits::pct);
+  leftDrive .spin(vex::directionType::fwd, l * modifer, vex::percentUnits::pct);
+  rightDrive.spin(vex::directionType::fwd, r * modifer, vex::percentUnits::pct);
 }
 
 int inteldrive::gcode(std::vector<gline> lines) {

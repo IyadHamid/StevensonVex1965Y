@@ -14,8 +14,6 @@
 
 #include "common.h"
 
-#define WIDTH_BETWEEN_WHEELS 10.0
-
 
 class inteldrive {
 public:
@@ -58,6 +56,9 @@ public:
   int runGCode();
 
 protected:
+
+  double robotWidth = 10.0;
+  
   vex::thread handler;
   vex::encoder leftEncoder, rightEncoder;
 
