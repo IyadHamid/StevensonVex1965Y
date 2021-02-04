@@ -31,6 +31,8 @@ static const double angle_difference(double a, double b) {
 struct vec2 {
   double x, y;
 
+  static vec2 polar(double mag, double ang) { return vec2{cos(ang), sin(ang) * mag}; };
+
   vec2 operator+(vec2 other) { return vec2{x+other.x, y+other.y}; }
   vec2 operator-(vec2 other) { return vec2{x-other.x, y-other.y}; }
   vec2 operator*(double other) { return vec2{x*other, y*other}; }

@@ -34,8 +34,8 @@ public:
   void drive(vex::directionType dir, double pct, vex::percentUnits units = vex::percentUnits::pct);
   void stop(vex::brakeType mode = vex::brakeType::brake);
 
-  void turnTo(double a, double vel);
-  void driveTo(vec2 loc, double vel);
+  void turnTo(double a, double vel, vex::velocityUnits units = vex::velocityUnits::pct);
+  void driveTo(vec2 loc, double vel, vex::velocityUnits units = vex::velocityUnits::pct);
   void arcTo(vec2 loc, double ang, bool cw, double vel);
 
   void arcade(double vertical, double horizontal, double vertModifier = 1.0, double horiModifer = 1.0);
@@ -53,10 +53,7 @@ public:
   };
   int gcode(std::vector<gline> lines);
 
-  int runGCode();
-
 protected:
-
   double robotWidth = 10.0;
   
   vex::thread handler;

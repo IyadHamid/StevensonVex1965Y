@@ -12,7 +12,8 @@
 #include "common.h"
 #include "PID.h"
 
-inteldrive::inteldrive(vex::inertial i, double ratio, vex::motor_group l, vex::motor_group r, 
+inteldrive::inteldrive(vex::inertial i, double ratio, 
+                       vex::motor_group l, vex::motor_group r, 
                        vex::encoder le, vex::encoder re)
                       : inertialSensor(i), leftEncoder{le}, rightEncoder{re} {
   inchesRatio = ratio;
@@ -45,7 +46,7 @@ void inteldrive::run() {
       
       //STEP 6 NOT IMPLEMENTED YET 
 
-      absoluteLocation += vec2{ dist * cos(absoluteRotation), dist * sin(absoluteRotation) };
+      absoluteLocation += vec2::polar(dist, absoluteRotation);
       //absoluteLocation += offset;
       absoluteRotation += theta;
 
@@ -73,13 +74,13 @@ void inteldrive::stop(vex::brakeType mode) {
 }
 
 
-void inteldrive::turnTo(double a, double vel) {
+void inteldrive::turnTo(double a, double vel, vex::velocityUnits units) {
   std::function<double(double)> error = [this](double goal) {
     return angle_difference(goal, getYaw());
   };
-  std::function<void(double)> output = [this](double input) {
-    leftDrive .spin(vex::directionType::fwd, input, vex::velocityUnits::rpm);
-    rightDrive.spin(vex::directionType::rev, input, vex::velocityUnits::rpm);
+  std::function<void(double)> output = [this, units](double input) {
+    leftDrive .spin(vex::directionType::fwd, input, units);
+    rightDrive.spin(vex::directionType::rev, input, units);
   };
   std::function<double(double)> func = [vel](double input) {
     return input * vel;
@@ -89,14 +90,14 @@ void inteldrive::turnTo(double a, double vel) {
   pid.run(a);
 }
 
-void inteldrive::driveTo(vec2 loc, double vel) {
+void inteldrive::driveTo(vec2 loc, double vel, vex::velocityUnits units) {
   vec2 disp = loc - absoluteLocation;
   turnTo(disp.ang(), vel);
   std::function<double(double)> error = [this, loc](double goal)->double {
     return (const_cast<vec2&>(loc) - absoluteLocation).mag();
   };
-  std::function<void(double)> output = [this](double input) {
-    drive(vex::directionType::fwd, input, vex::velocityUnits::rpm);
+  std::function<void(double)> output = [this, units](double input) {
+    drive(vex::directionType::fwd, input, units);
   };
   std::function<double(double)> func = [vel](double input) {
     return input * vel;
@@ -158,9 +159,10 @@ void inteldrive::tank(double l, double r, double modifer) {
 }
 
 int inteldrive::gcode(std::vector<gline> lines) {
-  for (gline l : lines) {
-    switch (l.i) {
+  for (gline line : lines) {
+    switch (line.i) {
       case G00:
+        driveTo(absoluteLocation + vec2{line.X, line.Y}, 100);
         break;
       case G01:
         break;
