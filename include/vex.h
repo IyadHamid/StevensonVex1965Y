@@ -2,6 +2,7 @@
 /*                                                                            */
 /*    Module:       vex.h                                                     */
 /*    Author:       Vex Robotics                                              */
+/*    Editor:       Iyad Hamid                                                */
 /*    Created:      1 Feb 2019                                                */
 /*    Description:  Default header for V5 projects                            */
 /*                                                                            */
@@ -15,5 +16,3 @@
 
 #include "v5.h"
 #include "v5_vcs.h"
-
-#include "robot-config.h"

@@ -41,8 +41,6 @@ void inteldrive::run() {
       //Gets most likely (average) radius
       double radius = (right/theta) + (robotWidth/2);
       double dist = 2 * sin(theta/2) * (radius/theta + robotWidth/2); 
-      //vec2 offset = {
-      //};
       
       //STEP 6 NOT IMPLEMENTED YET 
 

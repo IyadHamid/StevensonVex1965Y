@@ -14,7 +14,7 @@ constexpr double deg2rad(double a) { return a * pi/180.0; }
 
 // A is within T of B
 constexpr bool within_tolerance(double a, double b, double t) { 
-  return b-t <= a && a <= b + t;
+  return b - t <= a && a <= b + t;
 }
 // A is within X and Y
 constexpr bool within_angle_range(double a, double x, double y) {

@@ -23,6 +23,6 @@ Find this code [here](https://www.github.com/IyadHamid/StevensonVex1965Y-ChangeU
 
 |Name            | Type       | Port(s)  |
 |:---------------|:-----------|:---------|
-|`Controller    `| controller |          |
+|`primary       `| controller |          |
 
 # *...because it "just works".*
